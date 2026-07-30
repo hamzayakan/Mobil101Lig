@@ -8,6 +8,12 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
+/// Web redirect girişi başlatıldı; sayfa Google'a yönlendiriliyor.
+class WebAuthRedirectException extends AuthException {
+  WebAuthRedirectException()
+      : super('Google hesap seçimine yönlendiriliyorsunuz...');
+}
+
 /// Firebase yapılandırması eksik.
 class FirebaseNotConfiguredException extends AuthException {
   FirebaseNotConfiguredException()

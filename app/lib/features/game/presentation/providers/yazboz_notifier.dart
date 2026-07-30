@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../league/domain/entities/league_member_entity.dart';
+import '../../../league/presentation/providers/league_providers.dart';
 import '../../domain/entities/game_type.dart';
 import '../../domain/entities/player_entity.dart';
 import '../../domain/entities/team_entity.dart';
@@ -38,11 +41,45 @@ class YazbozNotifier extends Notifier<YazbozState> {
     state = state.copyWith(gameType: type, clearError: true);
   }
 
+  Future<void> setSelectedLeague(String? leagueId, String? leagueName) async {
+    if (leagueId == null) {
+      state = state.copyWith(clearLeague: true, clearError: true);
+      return;
+    }
+
+    state = state.copyWith(
+      selectedLeagueId: leagueId,
+      selectedLeagueName: leagueName,
+      clearError: true,
+    );
+
+    final members =
+        await ref.read(getLeagueMembersUseCaseProvider).execute(leagueId);
+    _applyLeagueMembers(members);
+  }
+
+  void _applyLeagueMembers(List<LeagueMemberEntity> members) {
+    final count = state.playerCount;
+    final names = List<String>.generate(count, (index) {
+      if (index < members.length) {
+        return members[index].displayName;
+      }
+      if (index < state.playerNames.length) {
+        return state.playerNames[index];
+      }
+      return '';
+    });
+
+    state = state.copyWith(
+      leagueMembers: members,
+      playerNames: names,
+    );
+  }
+
   void clearError() {
     state = state.copyWith(clearError: true);
   }
 
-  /// Oyunu başlatır; eşli modda takım kurulum aşamasına geçer.
   Future<void> startGame() async {
     final names = state.playerNames.map((n) => n.trim()).toList();
 
@@ -58,11 +95,13 @@ class YazbozNotifier extends Notifier<YazbozState> {
       return;
     }
 
+    final currentUser = ref.read(authStateProvider).valueOrNull;
     final players = List<PlayerEntity>.generate(
       state.playerCount,
       (i) => PlayerEntity(
         id: 'player_$i',
         name: names[i],
+        userId: _userIdForPlayerName(names[i]),
       ),
     );
 
@@ -70,6 +109,8 @@ class YazbozNotifier extends Notifier<YazbozState> {
     final game = await createGame.execute(
       players: players,
       gameType: state.gameType,
+      createdByUserId: currentUser?.id,
+      leagueId: state.selectedLeagueId,
     );
 
     if (state.gameType == GameType.team) {
@@ -82,6 +123,8 @@ class YazbozNotifier extends Notifier<YazbozState> {
         clearError: true,
         teamsConfirmed: false,
         clearResult: true,
+        isSaved: false,
+        clearSaveMessage: true,
       );
     } else {
       state = state.copyWith(
@@ -90,9 +133,21 @@ class YazbozNotifier extends Notifier<YazbozState> {
         phase: YazbozPhase.playing,
         clearError: true,
         clearResult: true,
+        isSaved: false,
+        clearSaveMessage: true,
       );
       await _refreshResult();
     }
+  }
+
+  String? _userIdForPlayerName(String name) {
+    final normalized = name.trim().toLowerCase();
+    for (final member in state.leagueMembers) {
+      if (member.displayName.trim().toLowerCase() == normalized) {
+        return member.userId;
+      }
+    }
+    return null;
   }
 
   List<TeamEntity> _buildDefaultTeams(List<PlayerEntity> players) {
@@ -111,7 +166,6 @@ class YazbozNotifier extends Notifier<YazbozState> {
     ];
   }
 
-  /// Oyuncuyu bir takımdan diğerine taşır.
   void movePlayerToTeam(String playerId, String targetTeamId) {
     final teams = state.draftTeams.map((team) {
       final ids = team.playerIds.where((id) => id != playerId).toList();
@@ -124,7 +178,6 @@ class YazbozNotifier extends Notifier<YazbozState> {
     state = state.copyWith(draftTeams: teams, clearError: true);
   }
 
-  /// Manuel takım atamasını onaylar.
   Future<void> confirmTeams() async {
     final game = state.game;
     if (game == null) {
@@ -150,7 +203,6 @@ class YazbozNotifier extends Notifier<YazbozState> {
     }
   }
 
-  /// Yeni el ekler.
   Future<void> addRound(Map<String, int> playerScores) async {
     if (state.game == null) {
       return;
@@ -161,13 +213,16 @@ class YazbozNotifier extends Notifier<YazbozState> {
       await addRound.execute(playerScores);
       await _syncRounds();
       await _refreshResult();
-      state = state.copyWith(clearError: true);
+      state = state.copyWith(
+        clearError: true,
+        isSaved: false,
+        clearSaveMessage: true,
+      );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
   }
 
-  /// Mevcut eli günceller.
   Future<void> updateRound({
     required int roundNumber,
     required Map<String, int> playerScores,
@@ -184,13 +239,16 @@ class YazbozNotifier extends Notifier<YazbozState> {
       );
       await _syncRounds();
       await _refreshResult();
-      state = state.copyWith(clearError: true);
+      state = state.copyWith(
+        clearError: true,
+        isSaved: false,
+        clearSaveMessage: true,
+      );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
   }
 
-  /// Eli siler.
   Future<void> deleteRound(int roundNumber) async {
     if (state.game == null) {
       return;
@@ -201,9 +259,62 @@ class YazbozNotifier extends Notifier<YazbozState> {
       await deleteRound.execute(roundNumber);
       await _syncRounds();
       await _refreshResult();
-      state = state.copyWith(clearError: true);
+      state = state.copyWith(
+        clearError: true,
+        isSaved: false,
+        clearSaveMessage: true,
+      );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<void> saveGameToLeague() async {
+    final game = state.game;
+    final result = state.result;
+    if (game == null || result == null) {
+      return;
+    }
+
+    if (state.selectedLeagueId == null) {
+      state = state.copyWith(
+        errorMessage: 'Lig kaydı için kurulumda lig seçmelisiniz.',
+      );
+      return;
+    }
+
+    if (state.rounds.isEmpty) {
+      state = state.copyWith(errorMessage: 'Kaydetmek için en az bir el girin.');
+      return;
+    }
+
+    state = state.copyWith(isSaving: true, clearError: true, clearSaveMessage: true);
+
+    try {
+      var members = state.leagueMembers;
+      if (members.isEmpty) {
+        members = await ref
+            .read(getLeagueMembersUseCaseProvider)
+            .execute(state.selectedLeagueId!);
+      }
+
+      await ref.read(completeAndSaveGameUseCaseProvider).execute(
+            game: game,
+            rounds: state.rounds,
+            result: result,
+            leagueMembers: members,
+          );
+
+      state = state.copyWith(
+        isSaving: false,
+        isSaved: true,
+        saveMessage: 'Oyun lige kaydedildi. Sıralama güncellendi.',
+      );
+    } catch (error) {
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: 'Oyun kaydedilemedi: $error',
+      );
     }
   }
 
@@ -218,7 +329,6 @@ class YazbozNotifier extends Notifier<YazbozState> {
     state = state.copyWith(result: result);
   }
 
-  /// Oturumu sıfırlar.
   void reset() {
     ref.read(gameRepositoryProvider).clear();
     state = const YazbozState();

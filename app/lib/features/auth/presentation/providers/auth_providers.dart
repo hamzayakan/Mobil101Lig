@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../services/firebase/firebase_initializer.dart';
@@ -26,10 +27,26 @@ final signOutUseCaseProvider = Provider(
   (ref) => SignOutUseCase(ref.watch(authRepositoryProvider)),
 );
 
+/// Web redirect dönüşünü tamamlar (varsa).
+final webAuthBootstrapProvider = FutureProvider<void>((ref) async {
+  if (!kIsWeb || !FirebaseInitializer.isInitialized) {
+    return;
+  }
+  await ref.read(firebaseAuthDataSourceProvider).completeWebRedirectSignIn();
+});
+
 /// Aktif oturum durumunu dinler.
 final authStateProvider = StreamProvider<UserEntity?>((ref) {
-  if (!FirebaseInitializer.isInitialized) {
-    return Stream.value(null);
-  }
-  return ref.watch(authRepositoryProvider).authStateChanges();
+  final bootstrap = ref.watch(webAuthBootstrapProvider);
+
+  return bootstrap.when(
+    loading: () => Stream.value(null),
+    error: (error, stackTrace) => Stream.error(error, stackTrace),
+    data: (_) {
+      if (!FirebaseInitializer.isInitialized) {
+        return Stream.value(null);
+      }
+      return ref.watch(authRepositoryProvider).authStateChanges();
+    },
+  );
 });

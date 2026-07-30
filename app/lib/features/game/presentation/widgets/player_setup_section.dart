@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../league/domain/entities/league_entity.dart';
+import '../../../league/presentation/providers/league_providers.dart';
 import '../../domain/entities/game_type.dart';
 import '../providers/yazboz_notifier.dart';
 
@@ -45,6 +48,7 @@ class _PlayerSetupSectionState extends ConsumerState<PlayerSetupSection> {
   Widget build(BuildContext context) {
     final state = ref.watch(yazbozNotifierProvider);
     final notifier = ref.read(yazbozNotifierProvider.notifier);
+    final user = ref.watch(authStateProvider).valueOrNull;
     _syncControllers(state.playerCount, state.playerNames);
 
     return Card(
@@ -58,6 +62,8 @@ class _PlayerSetupSectionState extends ConsumerState<PlayerSetupSection> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+            if (user != null) _LeagueSelector(userId: user.id),
+            if (user != null) const SizedBox(height: 12),
             DropdownButtonFormField<int>(
               initialValue: state.playerCount,
               decoration: const InputDecoration(
@@ -121,6 +127,53 @@ class _PlayerSetupSectionState extends ConsumerState<PlayerSetupSection> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LeagueSelector extends ConsumerWidget {
+  const _LeagueSelector({required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(yazbozNotifierProvider);
+    final notifier = ref.read(yazbozNotifierProvider.notifier);
+    final leaguesAsync = ref.watch(userLeaguesProvider(userId));
+
+    return leaguesAsync.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (error, _) => Text('Ligler yüklenemedi: $error'),
+      data: (leagues) {
+        return DropdownButtonFormField<String?>(
+          initialValue: state.selectedLeagueId,
+          decoration: const InputDecoration(
+            labelText: 'Lig (opsiyonel)',
+            border: OutlineInputBorder(),
+          ),
+          items: [
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text('Lig seçme'),
+            ),
+            ...leagues.map(
+              (LeagueEntity league) => DropdownMenuItem<String?>(
+                value: league.id,
+                child: Text(league.name),
+              ),
+            ),
+          ],
+          onChanged: (leagueId) async {
+            if (leagueId == null) {
+              await notifier.setSelectedLeague(null, null);
+              return;
+            }
+            final league = leagues.firstWhere((item) => item.id == leagueId);
+            await notifier.setSelectedLeague(league.id, league.name);
+          },
+        );
+      },
     );
   }
 }

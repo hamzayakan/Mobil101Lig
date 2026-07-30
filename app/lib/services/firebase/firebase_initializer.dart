@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -21,8 +22,24 @@ abstract final class FirebaseInitializer {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       _initialized = true;
+
+      if (kIsWeb) {
+        await _completeWebRedirectSignIn();
+      }
     } catch (error, stackTrace) {
       debugPrint('Firebase başlatılamadı: $error');
+      debugPrint('$stackTrace');
+    }
+  }
+
+  static Future<void> _completeWebRedirectSignIn() async {
+    try {
+      final result = await FirebaseAuth.instance.getRedirectResult();
+      if (result.user != null) {
+        debugPrint('Google redirect girişi tamamlandı: ${result.user!.email}');
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Google redirect girişi başarısız: $error');
       debugPrint('$stackTrace');
     }
   }

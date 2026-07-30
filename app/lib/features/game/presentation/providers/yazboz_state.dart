@@ -1,3 +1,4 @@
+import '../../../league/domain/entities/league_member_entity.dart';
 import '../../domain/entities/game_entity.dart';
 import '../../domain/entities/game_result.dart';
 import '../../domain/entities/game_type.dart';
@@ -24,21 +25,30 @@ class YazbozState {
     this.result,
     this.errorMessage,
     this.teamsConfirmed = false,
+    this.selectedLeagueId,
+    this.selectedLeagueName,
+    this.leagueMembers = const [],
+    this.isSaving = false,
+    this.isSaved = false,
+    this.saveMessage,
   });
 
   final YazbozPhase phase;
   final int playerCount;
   final List<String> playerNames;
   final GameType gameType;
-
-  /// Takım kurulumu aşamasında düzenlenen taslak takımlar.
   final List<TeamEntity> draftTeams;
-
   final GameEntity? game;
   final List<RoundEntity> rounds;
   final GameResult? result;
   final String? errorMessage;
   final bool teamsConfirmed;
+  final String? selectedLeagueId;
+  final String? selectedLeagueName;
+  final List<LeagueMemberEntity> leagueMembers;
+  final bool isSaving;
+  final bool isSaved;
+  final String? saveMessage;
 
   YazbozState copyWith({
     YazbozPhase? phase,
@@ -51,8 +61,16 @@ class YazbozState {
     GameResult? result,
     String? errorMessage,
     bool? teamsConfirmed,
+    String? selectedLeagueId,
+    String? selectedLeagueName,
+    List<LeagueMemberEntity>? leagueMembers,
+    bool? isSaving,
+    bool? isSaved,
+    String? saveMessage,
     bool clearError = false,
     bool clearResult = false,
+    bool clearLeague = false,
+    bool clearSaveMessage = false,
   }) {
     return YazbozState(
       phase: phase ?? this.phase,
@@ -65,6 +83,16 @@ class YazbozState {
       result: clearResult ? null : (result ?? this.result),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       teamsConfirmed: teamsConfirmed ?? this.teamsConfirmed,
+      selectedLeagueId:
+          clearLeague ? null : (selectedLeagueId ?? this.selectedLeagueId),
+      selectedLeagueName:
+          clearLeague ? null : (selectedLeagueName ?? this.selectedLeagueName),
+      leagueMembers: clearLeague
+          ? const []
+          : (leagueMembers ?? this.leagueMembers),
+      isSaving: isSaving ?? this.isSaving,
+      isSaved: isSaved ?? this.isSaved,
+      saveMessage: clearSaveMessage ? null : (saveMessage ?? this.saveMessage),
     );
   }
 }

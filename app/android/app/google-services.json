@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "mobil101lig-placeholder",
-    "storage_bucket": "mobil101lig-placeholder.appspot.com"
+    "project_number": "298154380644",
+    "project_id": "lig-2ab3b",
+    "storage_bucket": "lig-2ab3b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:298154380644:android:5dfc4c3965d74a53fb3e71",
         "android_client_info": {
           "package_name": "com.example.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "298154380644-hen0m9gbr7sn7eie9lujocbj9799gbok.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app",
+            "certificate_hash": "5690491b62603e0f264754a33c65bf017d555c01"
+          }
+        },
+        {
+          "client_id": "298154380644-m5sj1tna62ksddq9vnpth1m9at35qk7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "REPLACE_WITH_FLUTTERFIRE_ANDROID_API_KEY"
+          "current_key": "AIzaSyBYKGew4pIkab0aDJchBQhMWr8pOw6mQKw"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "298154380644-m5sj1tna62ksddq9vnpth1m9at35qk7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

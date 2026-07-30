@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/errors/auth_exception.dart';
+import '../../../../firebase_options.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/firebase_auth_datasource.dart';
@@ -11,7 +13,18 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required this.authDataSource,
     GoogleSignIn? googleSignIn,
-  }) : _googleSignIn = googleSignIn ?? GoogleSignIn();
+  }) : _googleSignIn = googleSignIn ?? _createGoogleSignIn();
+
+  static GoogleSignIn _createGoogleSignIn() {
+    if (kIsWeb) {
+      return GoogleSignIn(
+        clientId: DefaultFirebaseOptions.googleWebClientId,
+      );
+    }
+    return GoogleSignIn(
+      serverClientId: DefaultFirebaseOptions.googleWebClientId,
+    );
+  }
 
   final FirebaseAuthDataSource authDataSource;
   final GoogleSignIn _googleSignIn;
@@ -25,6 +38,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> signInWithGoogle() async {
     try {
+      if (kIsWeb) {
+        return authDataSource.signInWithGooglePopup();
+      }
+
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         throw AuthException('Google girişi iptal edildi.');
@@ -46,9 +63,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await Future.wait([
-      authDataSource.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await authDataSource.signOut();
+    if (!kIsWeb) {
+      await _googleSignIn.signOut();
+    }
   }
 }

@@ -2,10 +2,12 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Firebase yapılandırması.
-///
-/// Gerçek değerler için proje kökünde `flutterfire configure` çalıştırın.
+/// Firebase yapılandırması — `lig-2ab3b` projesi (google-services.json).
 class DefaultFirebaseOptions {
+  /// Google Sign-In için web OAuth client (google-services.json, client_type: 3).
+  static const String googleWebClientId =
+      '298154380644-m5sj1tna62ksddq9vnpth1m9at35qk7n.apps.googleusercontent.com';
+
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return web;
@@ -25,37 +27,38 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_FLUTTERFIRE_WEB_API_KEY',
-    appId: 'REPLACE_WITH_FLUTTERFIRE_WEB_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_FLUTTERFIRE_MESSAGING_SENDER_ID',
-    projectId: 'REPLACE_WITH_FLUTTERFIRE_PROJECT_ID',
-    authDomain: 'REPLACE_WITH_FLUTTERFIRE_AUTH_DOMAIN',
-    storageBucket: 'REPLACE_WITH_FLUTTERFIRE_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBUyOS_O8TPhjIn9LW6y4ZOMKMK-ob2MeA',
+    appId: '1:298154380644:web:047c1adb0b27559efb3e71',
+    messagingSenderId: '298154380644',
+    projectId: 'lig-2ab3b',
+    authDomain: 'lig-2ab3b.firebaseapp.com',
+    storageBucket: 'lig-2ab3b.firebasestorage.app',
+    measurementId: 'G-4SRH912ZC5',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_FLUTTERFIRE_ANDROID_API_KEY',
-    appId: 'REPLACE_WITH_FLUTTERFIRE_ANDROID_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_FLUTTERFIRE_MESSAGING_SENDER_ID',
-    projectId: 'REPLACE_WITH_FLUTTERFIRE_PROJECT_ID',
-    storageBucket: 'REPLACE_WITH_FLUTTERFIRE_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBYKGew4pIkab0aDJchBQhMWr8pOw6mQKw',
+    appId: '1:298154380644:android:5dfc4c3965d74a53fb3e71',
+    messagingSenderId: '298154380644',
+    projectId: 'lig-2ab3b',
+    storageBucket: 'lig-2ab3b.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_FLUTTERFIRE_IOS_API_KEY',
-    appId: 'REPLACE_WITH_FLUTTERFIRE_IOS_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_FLUTTERFIRE_MESSAGING_SENDER_ID',
-    projectId: 'REPLACE_WITH_FLUTTERFIRE_PROJECT_ID',
-    storageBucket: 'REPLACE_WITH_FLUTTERFIRE_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBYKGew4pIkab0aDJchBQhMWr8pOw6mQKw',
+    appId: '1:298154380644:android:5dfc4c3965d74a53fb3e71',
+    messagingSenderId: '298154380644',
+    projectId: 'lig-2ab3b',
+    storageBucket: 'lig-2ab3b.firebasestorage.app',
     iosBundleId: 'com.example.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_FLUTTERFIRE_IOS_API_KEY',
-    appId: 'REPLACE_WITH_FLUTTERFIRE_IOS_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_FLUTTERFIRE_MESSAGING_SENDER_ID',
-    projectId: 'REPLACE_WITH_FLUTTERFIRE_PROJECT_ID',
-    storageBucket: 'REPLACE_WITH_FLUTTERFIRE_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBYKGew4pIkab0aDJchBQhMWr8pOw6mQKw',
+    appId: '1:298154380644:android:5dfc4c3965d74a53fb3e71',
+    messagingSenderId: '298154380644',
+    projectId: 'lig-2ab3b',
+    storageBucket: 'lig-2ab3b.firebasestorage.app',
     iosBundleId: 'com.example.app',
   );
 }

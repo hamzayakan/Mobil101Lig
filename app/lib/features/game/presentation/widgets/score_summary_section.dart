@@ -132,6 +132,46 @@ class ScoreSummarySection extends ConsumerWidget {
                 ],
               ),
             ],
+            if (state.selectedLeagueId != null) ...[
+              const Divider(),
+              if (state.saveMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    state.saveMessage!,
+                    style: TextStyle(color: Colors.green.shade700),
+                  ),
+                ),
+              FilledButton.icon(
+                onPressed: state.isSaving || state.isSaved || state.rounds.isEmpty
+                    ? null
+                    : () => ref
+                        .read(yazbozNotifierProvider.notifier)
+                        .saveGameToLeague(),
+                icon: state.isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(state.isSaved ? Icons.check : Icons.save),
+                label: Text(
+                  state.isSaved
+                      ? 'Lige Kaydedildi'
+                      : state.isSaving
+                          ? 'Kaydediliyor...'
+                          : 'Lige Kaydet',
+                ),
+              ),
+              if (state.selectedLeagueName != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Lig: ${state.selectedLeagueName}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+            ],
           ],
         ),
       ),
