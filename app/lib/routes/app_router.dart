@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/game/presentation/screens/yazboz_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import 'route_names.dart';
@@ -19,6 +20,10 @@ class AppRouter {
       GoRoute(
         path: RouteNames.yazboz,
         builder: (context, state) => const YazbozScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.login,
+        builder: (context, state) => const LoginScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
